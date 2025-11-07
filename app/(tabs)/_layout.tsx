@@ -13,7 +13,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 
 const COLORS = {
-  primary: "#1F8E97",
+  primary: "#005A9A",
   secondary: "#004955",
   background: "#FFFFFF",
 };
@@ -53,7 +53,7 @@ export default function TabLayout() {
 
                   <TouchableOpacity
                     style={{ backgroundColor: COLORS.primary }}
-                    className="h-fit flex flex-row border item-center justify-center border-gray-300 rounded-[40px] p-2"
+                    className="h-fit flex flex-row item-center justify-center rounded-[40px] p-2"
                     onPress={() => router.push("/recharge")}
                   >
                     <LucidePlus size={24} color={"white"} />
@@ -67,7 +67,7 @@ export default function TabLayout() {
                     backgroundColor: COLORS.background,
                     borderColor: COLORS.primary,
                   }}
-                  className="h-fit flex flex-row border item-center justify-center border-gray-300 rounded-[40px] p-2"
+                  className="h-fit flex flex-row item-center justify-center rounded-[40px] p-2"
                   onPress={() => router.push("/recharge")}
                 >
                   <Text className="text-primary text-xl font-bold">

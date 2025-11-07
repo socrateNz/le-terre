@@ -24,17 +24,17 @@ export default function OnboardingScreen() {
         {
           title: 'Bienvenue sur Le Terre',
           description: 'Le Terre est un jeu de dés qui vous permet de gagner de l\'argent en jouant contre d\'autres joueurs.',
-          image: require('@/assets/images/carr1.jpg'),
+          image: require('@/assets/images/carr1.webp'),
         },
         {
           title: 'Comment ça marche ?',
           description: 'Vous pouvez jouer contre d\'autres joueurs en ligne. Vous pouvez gagner de l\'argent en jouant contre d\'autres joueurs.',
-          image: require('@/assets/images/carr2.jpg'),
+          image: require('@/assets/images/carr2.webp'),
         },
         {
           title: 'Dépot et retrait',
           description: 'Vous pouvez recharger votre compte en utilisant MTN Money ou Orange Money. Les retrait sont instantanés',
-          image: require('@/assets/images/carr3.jpg'),
+          image: require('@/assets/images/carr3.webp'),
         },
       ];
 
@@ -54,7 +54,7 @@ export default function OnboardingScreen() {
 
     return (
         <View style={styles.container}>
-            <StatusBar backgroundColor="#008E97" barStyle="light-content" />
+            <StatusBar backgroundColor="#005A9A" barStyle="light-content" />
 
             {/* Image qui occupe 2/3 de l'écran */}
             <View style={styles.imageContainer} className='relative'>
@@ -66,7 +66,7 @@ export default function OnboardingScreen() {
                 />
                 {/* Dégradé en bas de l'image */}
                 <LinearGradient
-                    colors={['#008E9710', '#008E9720', '#008E97']}
+                    colors={['#005A9A10', '#005A9A20', '#005A9A']}
                     locations={[0, 0.7, 1]}
                     style={styles.gradient}
                 />
@@ -112,7 +112,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#008E97',
+        backgroundColor: '#005A9A',
         paddingBottom: 32,
     },
     imageContainer: {
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 32,
         paddingBottom: 50,
         justifyContent: 'space-between',
-        backgroundColor: '#008E971A',
+        backgroundColor: '#005A9A1A',
     },
     indicatorContainer: {
         flexDirection: 'row',
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 32,
         borderRadius: 12,
         alignItems: 'center',
-        shadowColor: '#008E97',
+        shadowColor: '#005A9A',
         shadowOffset: {
             width: 0,
             height: 4,

@@ -14,7 +14,7 @@ import "../global.css";
 import OnboardingScreen from "./onboarding";
 
 const COLORS = {
-  primary: "#1F8E97",
+  primary: "#005A9A",
   secondary: "#004955",
   background: "#FFFFFF",
 };

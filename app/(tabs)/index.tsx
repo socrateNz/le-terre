@@ -6,7 +6,7 @@ import { ScrollView, Text, TouchableOpacity, useColorScheme, View } from "react-
 import "../../global.css";
 
 const COLORS = {
-  primary: "#1F8E97",
+  primary: "#005A9A",
   secondary: "#004955",
   background: "#FFFFFF",
 };

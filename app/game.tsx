@@ -6,6 +6,7 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Pressable,
   ScrollView,
   Text,
   TextInput,
@@ -17,8 +18,8 @@ import "../global.css";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const COLORS = {
-  primary: "#1F8E97",
-  secondary: "#004955",
+  primary: "#005A9A",
+  secondary: "#005A9A",
   background: "#FFFFFF",
   red: "#E74C3C",
   yellow: "#F1C40F",
@@ -91,20 +92,17 @@ export default function GameScreen() {
     return new Promise((resolve) => {
       const animation = Animated.timing(diceAnimations[diceIndex], {
         toValue: 1,
-        duration: 1200, // Durée totale de l'animation
+        duration: 1200,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       });
 
-      // Mettre à jour les valeurs animées pendant l'animation
       const startTime = Date.now();
       const interval = setInterval(() => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / 1200, 1);
         
-        // Changer la valeur affichée plusieurs fois pendant l'animation
         if (progress < 0.9) {
-          // Pendant 90% de l'animation, montrer des faces aléatoires
           const randomValue = Math.ceil(Math.random() * 6);
           setAnimatedValues(prev => {
             const newValues = [...prev[currentPlayerObj.id]];
@@ -115,7 +113,6 @@ export default function GameScreen() {
             };
           });
         } else {
-          // Les derniers 10% montrent la valeur finale
           setAnimatedValues(prev => {
             const newValues = [...prev[currentPlayerObj.id]];
             newValues[diceIndex] = finalValue;
@@ -125,12 +122,11 @@ export default function GameScreen() {
             };
           });
         }
-      }, 100); // Changer la face toutes les 100ms
+      }, 100);
 
       animation.start(() => {
         clearInterval(interval);
         diceAnimations[diceIndex].setValue(0);
-        // S'assurer que la valeur finale est affichée
         setAnimatedValues(prev => {
           const newValues = [...prev[currentPlayerObj.id]];
           newValues[diceIndex] = finalValue;
@@ -150,7 +146,7 @@ export default function GameScreen() {
     if (winner === "me") {
       Alert.alert(
         "🎉 Félicitations !",
-        `Vous avez gagné ${stakeAmount} FCFA !`,
+        `Vous avez gagné ${stakeAmount} FCFA !\nVotre solde a été crédité.`,
         [
           {
             text: "Continuer",
@@ -159,9 +155,10 @@ export default function GameScreen() {
         ]
       );
     } else if (winner === "opponent") {
+      // Débiter le joueur (déjà fait au début)
       Alert.alert(
         "😔 Dommage !",
-        `Vous avez perdu ${stakeAmount} FCFA !`,
+        `Vous avez perdu ${stakeAmount} FCFA !\nVotre solde a été débité.`,
         [
           {
             text: "Continuer", 
@@ -183,47 +180,71 @@ export default function GameScreen() {
     }
   };
 
+  const handleSetStake = (amount: string) => {
+    const stakeValue = Number(amount);
+    setStake(stakeValue);
+    
+    // Vérifier si le solde est suffisant quand la mise est définie
+    if (stakeValue > 0 && currentUser && currentUser.balance < stakeValue) {
+      Alert.alert(
+        "Solde insuffisant",
+        `Votre solde actuel est de ${currentUser.balance.toLocaleString()} FCFA.\nVeuillez recharger votre compte.`,
+        [
+          { text: "Annuler", style: "cancel" },
+          { 
+            text: "Recharger", 
+            onPress: () => router.push('/recharge') 
+          }
+        ]
+      );
+      setStake(0); // Réinitialiser la mise
+    }
+  };
+
   const handleRollDice = async () => {
     if (rolling || !isStakeSet) return;
     
+    // Vérifier une dernière fois le solde avant de commencer
+    if (currentUser && bet.stake && currentUser.balance < bet.stake) {
+      Alert.alert(
+        "Solde insuffisant",
+        "Votre solde a changé. Veuillez recharger votre compte.",
+        [
+          { text: "OK", onPress: () => router.push('/recharge') }
+        ]
+      );
+      return;
+    }
     setRolling(true);
     
-    // Générer les valeurs finales des dés
     const newValues = [
       Math.ceil(Math.random() * 6),
       Math.ceil(Math.random() * 6),
     ];
     
-    // Animer les deux dés simultanément avec changement de faces
     await Promise.all([
       animateDiceWithFaces(0, newValues[0]),
       animateDiceWithFaces(1, newValues[1]),
     ]);
     
-    // Mettre à jour les valeurs finales
     const playerKey = currentPlayerObj.id;
     setDiceValues(prev => ({
       ...prev,
       [playerKey]: newValues,
     }));
     
-    // Calculer le score (somme des dés)
     const total = newValues[0] + newValues[1];
-    
-    // Mettre à jour le score
     setScores(prev => ({
       ...prev,
       [playerKey]: total,
     }));
     
-    // Vérifier si tous les joueurs ont joué pour afficher le résultat
     const nextPlayer = (currentPlayer + 1) % players.length;
-    const allPlayed = nextPlayer === 0; // Si on revient au premier joueur, tous ont joué
+    const allPlayed = nextPlayer === 0;
     
     setCurrentPlayer(nextPlayer);
     setRolling(false);
 
-    // Si tous les joueurs ont joué, déterminer et afficher le résultat
     if (allPlayed) {
       setTimeout(() => {
         let winner: "me" | "opponent" | "draw" = "draw";
@@ -258,7 +279,6 @@ export default function GameScreen() {
     router.replace("/(tabs)");
   };
 
-  // Fonction pour rendre un dé avec animation réaliste
   const renderAnimatedDice = (value: number, index: number, playerId: string) => {
     const isCurrentPlayer = playerId === currentPlayerObj.id;
     const displayValue = rolling && isCurrentPlayer ? animatedValues[playerId][index] : value;
@@ -313,7 +333,6 @@ export default function GameScreen() {
     );
   };
 
-  // Fonction pour afficher les points d'un dé
   const renderDiceFace = (value: number) => {
     const positions: { [key: number]: number[][] } = {
       1: [[1, 1]],
@@ -352,12 +371,34 @@ export default function GameScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView contentContainerStyle={{ padding: 16 }}>
+        {/* Bouton de retour */}
+        <Pressable
+          className="rounded-full w-fit p-2 "
+          onPress={() => router.back()}
+        >
+          <Text className="text-[#007AFF] text-[20px]">← Retour</Text>
+        </Pressable>
         <Text
           className="text-2xl font-semibold text-center mb-6"
           style={{ color: COLORS.secondary }}
         >
           Partie de Dé
         </Text>
+
+        {/* Affichage du solde */}
+        <View className="mb-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+          <Text className="text-blue-800 text-center text-sm font-semibold">
+            Solde actuel
+          </Text>
+          <Text className="text-blue-900 text-center text-2xl font-bold mt-1">
+            {currentUser?.balance?.toLocaleString() || '0'} FCFA
+          </Text>
+          {bet.stake && currentUser && (
+            <Text className="text-blue-600 text-center text-xs mt-1">
+              Après mise : {(currentUser.balance - bet.stake).toLocaleString()} FCFA
+            </Text>
+          )}
+        </View>
 
         {/* Champ de mise */}
         <View className="mb-6">
@@ -369,13 +410,22 @@ export default function GameScreen() {
             placeholder="Entrez votre mise"
             className={`border rounded-xl p-3 text-center text-lg ${
               isStakeSet ? 'border-green-500 bg-green-50' : 'border-gray-300'
+            } ${
+              currentUser && bet.stake && currentUser.balance < bet.stake 
+                ? 'border-red-500 bg-red-50' 
+                : ''
             }`}
-            onChangeText={(text) => setStake(Number(text))}
+            onChangeText={handleSetStake}
             value={bet.stake?.toString() ?? ""}
           />
           {!isStakeSet && (
             <Text className="text-red-500 text-sm text-center mt-2">
               Veuillez configurer la mise pour pouvoir jouer
+            </Text>
+          )}
+          {currentUser && bet.stake && currentUser.balance < bet.stake && (
+            <Text className="text-red-500 text-sm text-center mt-2">
+              ❌ Solde insuffisant ! Votre solde est de {currentUser.balance.toLocaleString()} FCFA
             </Text>
           )}
         </View>
@@ -400,14 +450,12 @@ export default function GameScreen() {
                 </View>
               </View>
 
-              {/* Dés du joueur */}
               <View className="flex-row justify-center">
                 {diceValues[player.id].map((value, diceIndex) =>
                   renderAnimatedDice(value, diceIndex, player.id)
                 )}
               </View>
 
-              {/* Affichage du tour */}
               {currentPlayer === index && (
                 <View className="mt-2 items-center">
                   <Text className="text-sm text-gray-600">🎯 C'est votre tour</Text>
@@ -421,15 +469,19 @@ export default function GameScreen() {
         <TouchableOpacity
           className="py-4 rounded-xl mt-6"
           style={{ 
-            backgroundColor: isStakeSet ? currentPlayerObj.color : '#CCCCCC',
-            opacity: (rolling || !isStakeSet) ? 0.7 : 1 
+            backgroundColor: (isStakeSet && currentUser && (!bet.stake || currentUser.balance >= bet.stake)) 
+              ? currentPlayerObj.color 
+              : '#CCCCCC',
+            opacity: (rolling || !isStakeSet || (currentUser && bet.stake && currentUser.balance < bet.stake)) ? 0.7 : 1 
           }}
           onPress={handleRollDice}
-          disabled={rolling || !isStakeSet}
+          disabled={rolling || !isStakeSet || (currentUser  && currentUser.balance < bet.stake)}
         >
           <Text className="text-center text-white font-semibold text-lg">
             {!isStakeSet 
               ? 'Configurez la mise pour jouer'
+              : (currentUser && bet.stake && currentUser.balance < bet.stake)
+              ? 'Solde insuffisant'
               : rolling 
                 ? 'Lancement en cours...' 
                 : `Lancer les dés (${currentPlayerObj.name})`
@@ -465,6 +517,11 @@ export default function GameScreen() {
             <View className="flex-row justify-between w-full mt-4">
               <Text className="text-lg">Vous: {scores.me}</Text>
               <Text className="text-lg">Adversaire: {scores.opponent}</Text>
+            </View>
+            <View className="mt-4 p-3 bg-green-50 rounded-lg w-full">
+              <Text className="text-green-800 text-center font-semibold">
+                Nouveau solde : {currentUser?.balance?.toLocaleString()} FCFA
+              </Text>
             </View>
             <TouchableOpacity
               className="py-4 rounded-xl mt-4 w-full"
