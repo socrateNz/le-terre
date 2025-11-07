@@ -2,8 +2,10 @@ import { create } from 'zustand';
 
 export type Player = {
   username: string;
+  email: string;
   balance: number;
   phone?: string;
+  image?: string;
 };
 
 export type Bet = {
@@ -20,7 +22,7 @@ type AppState = {
   players: Player[];
   bet: Bet;
   // actions
-  loginOrRegister: (username: string, password: string, phone?: string) => void;
+  loginOrRegister: (username: string, password: string, phone?: string, email?: string) => void;
   recharge: (amount: number) => void;
   setStake: (stake: number) => void;
   selectOpponent: (opponent: Player) => void;
@@ -33,9 +35,9 @@ type AppState = {
 };
 
 const initialPlayers: Player[] = [
-  { username: '@Momo', balance: 3000 },
-  { username: '@Lina', balance: 1200 },
-  { username: '@Teddy', balance: 800 },
+  { username: '@Momo', balance: 3000, email: 'momo@example.com' },
+  { username: '@Lina', balance: 1200, email: 'linda@example.com' },
+  { username: '@Teddy', balance: 800, email: 'teddy@example.com' },
 ];
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -45,10 +47,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   bet: { stake: 0 },
   onboardingCompleted: false,
   setOnboardingCompleted: (onboardingCompleted: boolean) => set({ onboardingCompleted }),
-  loginOrRegister: (username, _password, phone) => {
+  loginOrRegister: (username, _password, phone, email) => {
     const users = { ...get().users };
     if (!users[username]) {
-      users[username] = { username, balance: 0, phone };
+      users[username] = { username, balance: 0, phone, email: email || `${username}@example.com` };
     }
     set({ users, currentUser: users[username] });
   },
